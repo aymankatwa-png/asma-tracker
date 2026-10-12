@@ -28,8 +28,8 @@ var CFG = {
   SIM: 128, DYE: 640,
   DENSITY_DISSIPATION: 0.5, VELOCITY_DISSIPATION: 1.1,
   PRESSURE: 0.8, PRESSURE_ITER: 18, CURL: 20,
-  RADIUS: 0.0009, FORCE: 4200, INK: 0.26, MAX: 0.85,
-  RIM: 0.55, SAT: 1.3, DROP: 0.75, HUE: 0.0025
+  RADIUS: 0.0009, FORCE: 4200, INK: 0.26, MAX: 1.5,
+  RIM: 0.4, SAT: 1.35, DROP: 0.75, HUE: 0.0025
 };
 window.__inkCFG = CFG;   /* handy for live tuning from the console */
 
@@ -69,7 +69,7 @@ var FRAG = {
     'void main(){vec3 c=max(texture(uTexture,vUv).rgb,0.);vec2 e=dyeTexel*1.6;' +
     'vec3 l=texture(uTexture,vUv-vec2(e.x,0.)).rgb,r=texture(uTexture,vUv+vec2(e.x,0.)).rgb,t=texture(uTexture,vUv+vec2(0.,e.y)).rgb,b=texture(uTexture,vUv-vec2(0.,e.y)).rgb;' +
     'vec3 rim=abs(r-l)+abs(t-b);float g=hash(floor(gl_FragCoord.xy*.7));float paper=vnoise(gl_FragCoord.xy*.035);' +
-    'vec3 a=c*(.85+.25*g+.2*paper)+rim*rimK;a=maxA*(1.-exp(-a*1.25));' +
+    'vec3 a=c*(.85+.25*g+.2*paper)+rim*rimK;float m=max(max(a.r,a.g),a.b)+1e-4;a*=maxA*(1.-exp(-m/maxA))/m;' +
     'vec2 q=smoothstep(calm.xy-.06,calm.xy+.02,vUv)*(1.-smoothstep(calm.zw-.02,calm.zw+.06,vUv));a*=1.-.55*q.x*q.y;' +
     'vec3 col=exp(-a);float lum=dot(col,vec3(.299,.587,.114));o=vec4(clamp(mix(vec3(lum),col,sat),0.,1.),1.);}'
 };
