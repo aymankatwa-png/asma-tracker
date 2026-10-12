@@ -26,9 +26,10 @@ gl.getExtension('OES_texture_float_linear');
 
 var CFG = {
   SIM: 128, DYE: 640,
-  DENSITY_DISSIPATION: 0.32, VELOCITY_DISSIPATION: 1.1,
+  DENSITY_DISSIPATION: 0.5, VELOCITY_DISSIPATION: 1.1,
   PRESSURE: 0.8, PRESSURE_ITER: 18, CURL: 20,
-  RADIUS: 0.00075, FORCE: 4200, INK: 0.075, MAX: 0.62
+  RADIUS: 0.0009, FORCE: 4200, INK: 0.26, MAX: 0.85,
+  RIM: 0.55, SAT: 1.3, DROP: 0.75, HUE: 0.0025
 };
 window.__inkCFG = CFG;   /* handy for live tuning from the console */
 
@@ -64,13 +65,13 @@ var FRAG = {
   gradient: HEAD + 'uniform sampler2D uPressure,uVelocity;void main(){float L=texture(uPressure,vL).x,R=texture(uPressure,vR).x,T=texture(uPressure,vT).x,B=texture(uPressure,vB).x;' +
     'vec2 v=texture(uVelocity,vUv).xy-vec2(R-L,T-B);o=vec4(v,0.,1.);}',
   /* paper + pigment: subtractive colour, darker rims where the wash dries, a little granulation */
-  display: HEAD + NOISE + 'uniform sampler2D uTexture;uniform vec2 dyeTexel;uniform vec4 calm;uniform float maxA;' +
+  display: HEAD + NOISE + 'uniform sampler2D uTexture;uniform vec2 dyeTexel;uniform vec4 calm;uniform float maxA,rimK,sat;' +
     'void main(){vec3 c=max(texture(uTexture,vUv).rgb,0.);vec2 e=dyeTexel*1.6;' +
     'vec3 l=texture(uTexture,vUv-vec2(e.x,0.)).rgb,r=texture(uTexture,vUv+vec2(e.x,0.)).rgb,t=texture(uTexture,vUv+vec2(0.,e.y)).rgb,b=texture(uTexture,vUv-vec2(0.,e.y)).rgb;' +
     'vec3 rim=abs(r-l)+abs(t-b);float g=hash(floor(gl_FragCoord.xy*.7));float paper=vnoise(gl_FragCoord.xy*.035);' +
-    'vec3 a=c*(.85+.25*g+.2*paper)+rim*1.1;a=maxA*(1.-exp(-a*1.25));' +
+    'vec3 a=c*(.85+.25*g+.2*paper)+rim*rimK;a=maxA*(1.-exp(-a*1.25));' +
     'vec2 q=smoothstep(calm.xy-.06,calm.xy+.02,vUv)*(1.-smoothstep(calm.zw-.02,calm.zw+.06,vUv));a*=1.-.55*q.x*q.y;' +
-    'o=vec4(exp(-a),1.);}'
+    'vec3 col=exp(-a);float lum=dot(col,vec3(.299,.587,.114));o=vec4(clamp(mix(vec3(lum),col,sat),0.,1.),1.);}'
 };
 
 function compile(type, src) {
@@ -192,7 +193,7 @@ function render() {
   gl.uniform2f(u.texelSize, 1 / canvas.width, 1 / canvas.height);
   gl.uniform2f(u.dyeTexel, dye.read.tx, dye.read.ty);
   gl.uniform1i(u.uTexture, dye.read.bind(0));
-  gl.uniform4f(u.calm, calm[0], calm[1], calm[2], calm[3]); gl.uniform1f(u.maxA, CFG.MAX);
+  gl.uniform4f(u.calm, calm[0], calm[1], calm[2], calm[3]); gl.uniform1f(u.maxA, CFG.MAX); gl.uniform1f(u.rimK, CFG.RIM); gl.uniform1f(u.sat, CFG.SAT);
   blit(null);
 }
 
@@ -217,14 +218,14 @@ function pigHex(t) { return PIG_HEX[Math.round(t) % PIG_HEX.length]; }
 
 /* a drop falling into the water: a ragged bloom pushed outward by a ring of small currents */
 function drop(x, y, k, size) {
-  var col = pigment(hueT, 0.55 * (k || 1)), s = size || 1;
+  var col = pigment(Math.round(hueT), CFG.DROP * (k || 1)), s = size || 1;
   splat(x, y, 0, 0, col, CFG.RADIUS * 3.4 * s, 1);
   var n = 7, ar = canvas.width / canvas.height, off = 0.014 * s;
   for (var i = 0; i < n; i++) {
     var an = i / n * 6.283 + Math.random() * .6, cx = Math.cos(an), cy = Math.sin(an);
-    splat(x + cx * off / ar, y + cy * off, cx * 380 * s, cy * 380 * s, i % 2 ? pigment(hueT + .5, .14) : null, CFG.RADIUS * 1.1 * s, 1);
+    splat(x + cx * off / ar, y + cy * off, cx * 380 * s, cy * 380 * s, i % 2 ? pigment(Math.round(hueT), .12) : null, CFG.RADIUS * 1.1 * s, 1);
   }
-  hueT += 0.9 + Math.random() * 0.6;
+  hueT = Math.round(hueT) + 1 + ((Math.random() * 2) | 0);
 }
 
 /* ---------- input ---------- */
@@ -277,8 +278,8 @@ function applyInput() {
   var sp = Math.min(1, Math.hypot(dx, dy) * 40);
   pointer.px = pointer.x; pointer.py = pointer.y;
   if (sp < 0.002) return;
-  hueT += 0.006 + sp * 0.02;
-  splat(pointer.x, pointer.y, dx * CFG.FORCE, dy * CFG.FORCE, pigment(hueT, CFG.INK * (0.45 + sp * 1.4)), CFG.RADIUS * (0.75 + sp * .9), .65);
+  hueT += CFG.HUE + sp * 0.006;
+  splat(pointer.x, pointer.y, dx * CFG.FORCE, dy * CFG.FORCE, pigment(hueT, CFG.INK * (0.5 + sp * 1.2)), CFG.RADIUS * (0.8 + sp * .8), .4);
 }
 
 /* ---------- ambient life: an opening bloom, then a drop every few seconds ---------- */
@@ -290,7 +291,7 @@ function opening() {
   var seq = [];
   if (portrait) seq.push(rel(portrait, -0.08, 0.6), rel(portrait, 1.06, 0.4), rel(portrait, 0.5, 1.02));
   var title = document.querySelector('.hero-title');
-  if (title) seq.push(rel(title, 1.02, 0.15), rel(title, -0.04, 0.9));
+  if (title && window.innerWidth > 980) seq.push(rel(title, -0.06, 0.5));
   seq.forEach(function (p, i) { setTimeout(function () { drop(p.x, p.y, 1.25, 1.15); }, 350 + i * 420); });
 }
 var lastAmbient = 0;
