@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=1">
+<link rel="stylesheet" href="app.css?v=2">
 </head>
 <body>
 
@@ -98,7 +98,7 @@
     <div class="hero-grid">
       <div class="hero-copy">
         <div class="kicker">مرسم أسماء · Asma's Studio</div>
-        <h1 class="hero-title">لوحةٌ <span class="ink-word">تكتمل</span><br>طبقةً… طبقة</h1>
+        <h1 class="hero-title"><span class="ln">لوحةٌ <span class="ink-word">تكتمل</span></span><br><span class="ln l2">طبقةً… طبقة</span></h1>
         <p class="hero-sub">
           تعرفين أنّ اللوحة المائية لا تُرسَم دفعةً واحدة: ورقةٌ تُبلَّل، ثم غسلةٌ أولى، ثم طبقاتٌ تتراكم حتى تظهر الصورة.
           هكذا هي هذه الرحلة: <b>ستة فصول</b> في اثني عشر أسبوعًا، تجمعين فيها <b>السرد</b> مع <b>الاستراتيجية</b> لتصنعي حملات رقمية
@@ -109,6 +109,7 @@
           <cite>— أسماء</cite>
         </blockquote>
         <div class="stats" id="stats"></div>
+        <div class="hero-hint"><i></i> حرّكي المؤشّر هنا… وارسمي بالحبر على الماء</div>
       </div>
 
       <div class="hero-art">
@@ -158,11 +159,8 @@
               <path class="tendril t3" d="M330 140 C 300 200, 360 250, 320 330" stroke="#4A63B5" stroke-width="7" fill="none" stroke-linecap="round" opacity=".5"/>
             </g></g>
           </svg>
-          <div class="ink-drops" id="inkDrops" aria-hidden="true"></div>
           <span class="tape" aria-hidden="true"></span>
           <img src="assets/asma-sticker.webp" alt="أسماء" class="sticker">
-          <!-- a thin wash bleeding over the sticker's lower edge -->
-          <div class="ink-veil" aria-hidden="true"></div>
         </div>
         <div class="bubble" id="bubble"><span id="bubbleTxt"></span><span class="caret"></span></div>
       </div>
@@ -273,6 +271,7 @@
 
 <canvas id="confetti"></canvas>
 <div class="toasts" id="toasts"></div>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
+<script src="ink.js?v=2"></script>
 </body>
 </html>

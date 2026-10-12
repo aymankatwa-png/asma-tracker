@@ -814,45 +814,6 @@ function renderLater() {
 
 var INKS = ['#D9798B', '#2F8C8C', '#D9A441', '#4A63B5', '#8A6BB0', '#6E9A52'];
 
-/* ink drops falling into the wash around her portrait */
-function inkDrop(x, y, c, big) {
-  var box = $('#inkDrops'); if (!box) return;
-  c = c || INKS[(Math.random() * INKS.length) | 0];
-  var fall = document.createElement('span');
-  fall.className = 'drop-fall';
-  fall.style.cssText = '--x:' + x + '%;--y:' + y + '%;--c:' + c;
-  box.appendChild(fall);
-  setTimeout(function () {
-    fall.remove();
-    var d = document.createElement('span');
-    var s = big ? 120 + Math.random() * 90 : 70 + Math.random() * 90;
-    d.className = 'drop';
-    d.style.cssText = '--x:' + x + '%;--y:' + y + '%;--c:' + c + ';--s:' + s.toFixed(0) + 'px;--d:' + (4.5 + Math.random() * 3).toFixed(1) + 's';
-    box.appendChild(d);
-    setTimeout(function () { d.remove(); }, 8000);
-  }, 520);
-}
-function startInk() {
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) return;
-  function edge() { /* drops land around her, not on her face */
-    var side = Math.random();
-    if (side < 0.35) return [8 + Math.random() * 18, 30 + Math.random() * 60];
-    if (side < 0.7) return [74 + Math.random() * 18, 30 + Math.random() * 60];
-    return [20 + Math.random() * 60, 82 + Math.random() * 14];
-  }
-  var first = edge(); inkDrop(first[0], first[1], '#D9798B', true);
-  setInterval(function () { if (document.hidden) return; var p = edge(); inkDrop(p[0], p[1]); }, 2600);
-  var hp = $('#heroPortrait');
-  if (hp) hp.addEventListener('click', function (e) {
-    var r = hp.getBoundingClientRect(), box = $('#inkDrops').getBoundingClientRect();
-    var x = (e.clientX - box.left) / box.width * 100, y = (e.clientY - box.top) / box.height * 100;
-    inkDrop(x, y, null, true);
-    setTimeout(function () { var p = edge(); inkDrop(p[0], p[1]); }, 220);
-    setTimeout(function () { var p = edge(); inkDrop(p[0], p[1]); }, 420);
-  });
-}
-
 /* paint-splash confetti */
 var cvs = document.getElementById('confetti'), ctx = cvs.getContext('2d'), parts = [], rafId = null;
 function sizeCanvas() { cvs.width = innerWidth; cvs.height = innerHeight; }
@@ -938,7 +899,7 @@ function init() {
   function assumeRole(role, b) {
     S.role = role; saveCfg(); showRolePicker(false); render();
     if (b) splash(b, 30);
-    if (role === 'asma') { toast('أهلًا يا أسماء 🎨 المرسم جاهز، والورقة مبلّلة'); inkDrop(50, 60, '#D9798B', true); }
+    if (role === 'asma') { toast('أهلًا يا أسماء 🎨 المرسم جاهز، والورقة مبلّلة — حرّكي المؤشّر في الأعلى وارسمي بالحبر'); }
   }
   document.querySelectorAll('[data-role]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -964,7 +925,7 @@ function init() {
     S.sync = S.gistId ? 'idle' : 'local'; toast('تم الحفظ — جارٍ الاتصال…'); pull(true);
   });
 
-  render(); observeReveals(); startQuotes(); startInk();
+  render(); observeReveals(); startQuotes();
   if (S.gistId) pull();
   setInterval(function () { if (S.gistId && !pushPending) pull(); }, 60000);
 }
