@@ -30,6 +30,7 @@ var CFG = {
   PRESSURE: 0.8, PRESSURE_ITER: 18, CURL: 20,
   RADIUS: 0.00075, FORCE: 4200, INK: 0.075, MAX: 0.62
 };
+window.__inkCFG = CFG;   /* handy for live tuning from the console */
 
 /* pigments as absorbance: exp(-a) gives back the paint colour on white paper */
 function absorb(hex) {
