@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF6EC">
+<title>مرسم أسماء — متتبّع الرحلة · المركز الإعلامي — ممكن</title>
+<meta name="description" content="متتبّع رحلة أسماء في التسويق الرقمي والسرد البصري — المركز الإعلامي، منظمة ممكن للتوعية والإعلام. أكتوبر – ديسمبر 2026.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+
+<!-- shared watercolor filters -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="wc" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.3" result="b"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="9" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.05" result="ga"/>
+      <feComposite in="b" in2="ga" operator="in" result="grain"/>
+      <feMorphology in="b" operator="erode" radius="1.2" result="er"/>
+      <feComposite in="b" in2="er" operator="out" result="edge"/>
+      <feColorMatrix in="edge" type="matrix" values="0.6 0 0 0 0  0 0.6 0 0 0  0 0 0.6 0 0  0 0 0 0.55 0" result="edgeDark"/>
+      <feMerge><feMergeNode in="grain"/><feMergeNode in="edgeDark"/></feMerge>
+    </filter>
+    <filter id="wcSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="3"/>
+    </filter>
+    <filter id="pencil">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ============ role picker ============ -->
+<div class="veil hidden" id="rolePicker">
+  <div class="veil-card paper">
+    <div class="veil-avatar"><img src="assets/asma-sticker-sm.webp" alt="أسماء"></div>
+    <h2>مَن في المرسم الآن؟</h2>
+    <p>الإجابة تُحفَظ على هذا الجهاز فقط — ويمكنك تغييرها في أي وقت.</p>
+    <div class="pick-row">
+      <button class="btn btn-teal" data-role="asma">أنا أسماء 🎨</button>
+      <button class="btn btn-ink" data-role="manager">أنا المشرف</button>
+    </div>
+    <div class="pin-row hidden" id="pinRow">
+      <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="رمز المشرف" dir="ltr" autocomplete="off">
+      <button class="btn btn-ink btn-sm" id="pinGo">دخول</button>
+      <div class="pin-err hidden" id="pinErr">الرمز غير صحيح — حاول مجددًا.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ sync bar ============ -->
+<div class="syncbar">
+  <div class="syncbar-in">
+    <span class="dot" id="syncDot"></span>
+    <span class="sync-txt" id="syncTxt">حفظ محلي فقط</span>
+    <span class="grow"></span>
+    <span class="role-badge" id="roleBadge">—</span>
+    <button class="btn btn-ghost btn-xs" id="btnSwitchRole">تبديل</button>
+    <button class="btn btn-teal btn-xs" id="btnSyncNow">مزامنة الآن</button>
+    <button class="btn btn-ghost btn-xs" id="btnSetup">إعدادات الحفظ</button>
+  </div>
+  <div class="setup hidden" id="setupPanel">
+    <div class="setup-in">
+      <div class="field"><label>GitHub Gist ID</label><input id="inGist" placeholder="a1b2c3d4…" autocomplete="off" spellcheck="false" dir="ltr"></div>
+      <div class="field"><label>GitHub Token · gist scope</label><input id="inToken" type="password" placeholder="ghp_…" autocomplete="off" dir="ltr"></div>
+      <div class="field narrow"><label>اسم الملف داخل الـ Gist</label><input id="inFile" dir="ltr"></div>
+      <button class="btn btn-teal btn-sm" id="btnSaveSetup">حفظ وربط</button>
+      <div class="setup-note">أدخلي القيم الثلاث كما وصلتك في رسالة المشرف، ثم «حفظ وربط» — يتحوّل المؤشر إلى «متزامن» ويُحفظ تقدّمك على كل أجهزتك.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ hero: the studio ============ -->
+<header class="hero">
+  <div class="splash s1" aria-hidden="true"></div>
+  <div class="splash s2" aria-hidden="true"></div>
+  <div class="splash s3" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-top">
+      <div class="brandmark">
+        <img src="assets/logo-cyan.png" alt="ممكن">
+        <div class="bm-txt">Moomken Media Center<br>Tripoli · Libya</div>
+      </div>
+      <div class="season-tag">Autumn Studio · <b>Oct — Dec 2026</b></div>
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="kicker">مرسم أسماء · Asma's Studio</div>
+        <h1 class="hero-title">لوحةٌ <span class="ink-word">تكتمل</span><br>طبقةً… طبقة</h1>
+        <p class="hero-sub">
+          تعرفين أنّ اللوحة المائية لا تُرسَم دفعةً واحدة: ورقةٌ تُبلَّل، ثم غسلةٌ أولى، ثم طبقاتٌ تتراكم حتى تظهر الصورة.
+          هكذا هي هذه الرحلة: <b>ستة فصول</b> في اثني عشر أسبوعًا، تجمعين فيها <b>السرد</b> مع <b>الاستراتيجية</b> لتصنعي حملات رقمية
+          تُرى وتُحَسّ. كلُّ مهمة تُنجزينها ضربةُ فرشاة — وكلُّ فصلٍ يكتمل يُضيف طبقةً جديدة إلى لوحتك في الأعلى.
+        </p>
+        <blockquote class="her-line">
+          <span class="q">”</span>لا تسعي للكمال… بل للتجربة.<span class="q">“</span>
+          <cite>— أسماء</cite>
+        </blockquote>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <div class="hero-art">
+        <div class="easel">
+          <div class="canvas-frame" id="heroCanvas">
+            <svg id="painting" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid slice" role="img" aria-label="لوحة الرحلة"></svg>
+            <div class="canvas-pct" id="canvasPct"></div>
+          </div>
+          <div class="easel-legs" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+        <div class="sticker-wrap" id="heroPortrait">
+          <!-- living ink: translucent pigment drifting in water behind her -->
+          <svg class="ink-sea" viewBox="0 0 400 400" aria-hidden="true">
+            <defs>
+              <filter id="inkFlow" filterUnits="userSpaceOnUse" x="-120" y="-120" width="640" height="640" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.011 0.016" numOctaves="2" seed="7" result="t">
+                  <animate attributeName="baseFrequency" dur="22s" values="0.011 0.016;0.017 0.010;0.009 0.014;0.011 0.016" repeatCount="indefinite"/>
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="t" scale="70" xChannelSelector="R" yChannelSelector="G" result="d">
+                  <animate attributeName="scale" dur="13s" values="55;95;60;55" repeatCount="indefinite"/>
+                </feDisplacementMap>
+                <feGaussianBlur in="d" stdDeviation="2.4"/>
+              </filter>
+              <filter id="inkMark" filterUnits="userSpaceOnUse" x="-40" y="100" width="480" height="220">
+                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3" result="t">
+                  <animate attributeName="baseFrequency" dur="16s" values="0.02;0.032;0.02" repeatCount="indefinite"/>
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="t" scale="16"/>
+                <feGaussianBlur stdDeviation="0.8"/>
+              </filter>
+              <radialGradient id="gRose"><stop offset="0" stop-color="#D9798B" stop-opacity="1"/><stop offset=".55" stop-color="#E08C9C" stop-opacity=".62"/><stop offset="1" stop-color="#E7A0AD" stop-opacity="0"/></radialGradient>
+              <radialGradient id="gTeal"><stop offset="0" stop-color="#2F8C8C" stop-opacity=".95"/><stop offset=".6" stop-color="#4FA3A0" stop-opacity=".55"/><stop offset="1" stop-color="#5FB1AE" stop-opacity="0"/></radialGradient>
+              <radialGradient id="gOchre"><stop offset="0" stop-color="#D9A441" stop-opacity="1"/><stop offset=".6" stop-color="#E5B862" stop-opacity=".58"/><stop offset="1" stop-color="#EBC57A" stop-opacity="0"/></radialGradient>
+              <radialGradient id="gUltra"><stop offset="0" stop-color="#4A63B5" stop-opacity=".9"/><stop offset=".6" stop-color="#6F83C8" stop-opacity=".48"/><stop offset="1" stop-color="#7F92D0" stop-opacity="0"/></radialGradient>
+              <radialGradient id="gViolet"><stop offset="0" stop-color="#8A6BB0" stop-opacity=".9"/><stop offset="1" stop-color="#8A6BB0" stop-opacity="0"/></radialGradient>
+            </defs>
+            <!-- ink watermark: her name, dissolving in water -->
+            <text class="ink-name" x="200" y="250" text-anchor="middle" filter="url(#inkMark)">أسماء</text>
+            <g filter="url(#inkFlow)"><g class="ink-pool">
+              <circle class="blob b1" cx="130" cy="170" r="120" fill="url(#gRose)"/>
+              <circle class="blob b2" cx="285" cy="215" r="112" fill="url(#gTeal)"/>
+              <circle class="blob b3" cx="200" cy="315" r="96" fill="url(#gOchre)"/>
+              <circle class="blob b4" cx="235" cy="105" r="78" fill="url(#gUltra)"/>
+              <circle class="blob b5" cx="95" cy="290" r="60" fill="url(#gViolet)"/>
+              <path class="tendril t1" d="M60 120 C 120 60, 200 140, 260 70 S 360 90, 370 40" stroke="#2F8C8C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".6"/>
+              <path class="tendril t2" d="M40 330 C 110 280, 170 360, 250 320 S 340 250, 380 300" stroke="#D9798B" stroke-width="8" fill="none" stroke-linecap="round" opacity=".6"/>
+              <path class="tendril t3" d="M330 140 C 300 200, 360 250, 320 330" stroke="#4A63B5" stroke-width="7" fill="none" stroke-linecap="round" opacity=".5"/>
+            </g></g>
+          </svg>
+          <div class="ink-drops" id="inkDrops" aria-hidden="true"></div>
+          <span class="tape" aria-hidden="true"></span>
+          <img src="assets/asma-sticker.webp" alt="أسماء" class="sticker">
+          <!-- a thin wash bleeding over the sticker's lower edge -->
+          <div class="ink-veil" aria-hidden="true"></div>
+        </div>
+        <div class="bubble" id="bubble"><span id="bubbleTxt"></span><span class="caret"></span></div>
+      </div>
+    </div>
+
+    <div class="week-card paper" id="weekCard"></div>
+  </div>
+</header>
+
+<!-- ============ the palette (map) ============ -->
+<section class="sec wrap" id="mapSec">
+  <div class="sec-head rv"><h2>لوح الألوان</h2><span class="en">The Palette</span></div>
+  <p class="sec-lead rv">لكل فصلٍ لونُه. كلّما أنجزتِ مهمة امتلأ حوضُه بالصبغة — اضغطي أي لون للانتقال إلى فصله.</p>
+  <div class="palette-wrap rv"><div class="palette" id="palette"></div></div>
+</section>
+
+<!-- ============ 12 weeks ============ -->
+<section class="sec wrap" id="runSec">
+  <div class="sec-head rv"><h2>ضربات الأسابيع</h2><span class="en">12 Brushstrokes</span></div>
+  <p class="sec-lead rv">من 11 أكتوبر حتى 31 ديسمبر. كلّ أسبوعٍ عملتِ فيه يُلوَّن — والهدف أن تبقى الضربات متّصلة: <b>روتين صغير ثابت</b> أجمل من اندفاعٍ متقطّع.</p>
+  <div class="strokes rv" id="strokes"></div>
+</section>
+
+<!-- ============ manager panel ============ -->
+<section class="sec wrap hidden" id="mgrSec"><div class="mgr rv" id="mgrPanel"></div></section>
+
+<!-- ============ chapters ============ -->
+<section class="sec wrap">
+  <div class="sec-head rv"><h2>فصول اللوحة</h2><span class="en">Six Layers · Two Courses</span></div>
+  <p class="sec-lead rv">
+    أشِّري على المهمة متى أنجزتِها → تصبح <b class="t-amber">قيد المراجعة</b> → فإذا اعتمدها المشرف أصبحت <b class="t-teal">«تمّ ✦»</b>.
+    في التمارين والمشاريع أرفقي رابط عملك (تصميم، نص، لوحة مصوّرة) ليراه المشرف مباشرة.
+  </p>
+  <div class="legend rv">
+    <span class="lg"><i class="cb cb-am"></i> Alan Moore · Storytelling</span>
+    <span class="lg"><i class="cb cb-sfs"></i> Strategy Finishing School</span>
+    <span class="lg"><i class="cb cb-free"></i> لونٌ مرافق</span>
+    <span class="lg"><i class="cb cb-mm"></i> تطبيق على عمل ممكن</span>
+  </div>
+  <div class="chapters" id="chapters"></div>
+</section>
+
+<!-- ============ the drying lines (PDF gallery) ============ -->
+<section class="lines-sec" id="gallerySec">
+  <div class="wrap">
+    <div class="sec-head rv"><h2>حبال التجفيف</h2><span class="en">The Drying Lines</span></div>
+    <p class="sec-lead rv">
+      لوحاتٌ معلّقة لتجفّ — في كلٍّ منها كتابٌ أو دليل. مرّري المؤشّر لتتأرجح اللوحة وتتفتّح ألوانها، واضغطي عليها ليُفتح الملف (PDF) مباشرةً للقراءة.
+    </p>
+  </div>
+  <div class="lines" id="lines"></div>
+  <div class="wrap peek-sticky"><div class="label-card" id="labelCard" aria-live="polite"></div></div>
+</section>
+
+<!-- ============ companion colours (courses) ============ -->
+<section class="sec wrap" id="swatchSec">
+  <div class="sec-head rv"><h2>ألوانٌ مرافقة</h2><span class="en">Companion Swatches</span></div>
+  <p class="sec-lead rv">دوراتٌ قصيرة بالعربية والإنجليزية في التسويق الرقمي والإعلانات والمحتوى — كلُّ عيّنة لونٍ مربوطةٌ بفصلٍ من فصولك. اضغطي العيّنة لتبدئي.</p>
+  <div class="swatches" id="swatches"></div>
+</section>
+
+<!-- ============ the covered canvas (finale) ============ -->
+<section class="sec wrap" id="finaleSec"><div class="finale rv" id="finale"></div></section>
+
+<!-- ============ sketchbook: later ============ -->
+<section class="sec wrap" id="laterSec">
+  <details class="later paper rv">
+    <summary>
+      <span class="later-ic">✎</span>
+      <span>
+        <b>دفتر الاسكتشات — لاحقًا</b>
+        <small>الرسوم المتحركة، رسوم كتب الأطفال، الوثائقي… أحلامك الكبيرة لها مكانها هنا، تنتظرك بعد هذا الموسم. التركيز الآن على الحملات الرقمية والسرد.</small>
+      </span>
+      <span class="later-arrow">⌄</span>
+    </summary>
+    <div class="later-body" id="laterBody"></div>
+  </details>
+</section>
+
+<!-- ============ the promise ============ -->
+<section class="sec wrap" id="promiseSec">
+  <div class="promise paper rv">
+    <div class="promise-kicker">إلى سُموتة · To the little one</div>
+    <h2>«أن أوفّر قصصنا للجميع…<br>أن أجعل تواجدنا <span class="ink-word">طبيعيًّا</span> لا يحتاج إلى تبرير.»</h2>
+    <p>
+      هذا ما كتبتِه — وهذا بالضبط ما تصنعه حملةٌ رقمية جيدة: تأخذ حكايةً من حكايات الجدّات، أو تفصيلةً من حرفةٍ قديمة،
+      وتحوّلها إلى صورةٍ وكلمةٍ يراها الناس على شاشاتهم فيشعرون أنها تشبههم.
+      الريشة معك، والألوان معك… والرحلة تبدأ بضربةٍ واحدة.
+    </p>
+    <div class="promise-sign">
+      <span class="sig">أسماء</span>
+      <span class="sig-line">كلُّ مُرٍّ سيمُرّ ✦</span>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <img src="assets/logo-white.png" alt="ممكن">
+    <div class="f-txt">
+      المركز الإعلامي — منظمة ممكن للتوعية والإعلام · طرابلس، ليبيا<br>
+      <span class="f-en">EVERYTHING IS MOOMKEN — كل شيء ممكن</span><br>
+      <span class="f-ref">✦ هذا المرسم بُني على ما كتبتِه بنفسك: رسالتك إلى نسختك الأصغر، وخارطة تطويرك الشخصي.</span>
+    </div>
+    <div class="f-courses">Alan Moore — Storytelling (BBC Maestro) · Strategy Finishing School — Julian Cole</div>
+  </div>
+</footer>
+
+<canvas id="confetti"></canvas>
+<div class="toasts" id="toasts"></div>
+<script src="app.js?v=1"></script>
+</body>
+</html>
